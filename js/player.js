@@ -191,7 +191,8 @@ function loadPlayer(type, id, url) {
     loadVKSDKPlayer(url, type);
 }
 
-// Hide all player containers
+function hideAllPlayers() {
+    // Hide all player containers
     document.getElementById('errorMessage')?.classList.add('hidden');
     
     // Show original VK SDK player root - this is our main player now
@@ -202,7 +203,6 @@ function loadPlayer(type, id, url) {
     }
 }
 
-// Load VK SDK Player - supports all video types (VK, YouTube, MP4, HLS, DASH)
 function loadVKSDKPlayer(url, type = 'mp4') {
     const vkRoot = document.getElementById('vk-player-root');
     
