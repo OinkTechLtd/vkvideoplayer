@@ -1,5 +1,1 @@
-(js/player.js, js/vk-player.js, player.html - these are source files, no build artifacts, dependencies, or temp files present)
-
-```javascript
-
-```
+(js/player.js, player.html)

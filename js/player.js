@@ -248,53 +248,14 @@ function loadVKSDKPlayer(url, type = 'mp4') {
     vkRoot.innerHTML = '';
     vkRoot.classList.remove('hidden');
 
-    // Determine MIME type based on video type
-    let mimeType = 'video/mp4';
-    if (type === 'hls' || url.includes('.m3u8') || url.includes('hls')) {
-        mimeType = 'application/x-mpegURL';
-    } else if (type === 'dash' || url.includes('.mpd')) {
-        mimeType = 'application/dash+xml';
-    } else if (type === 'youtube') {
-        // For YouTube, we still use the direct URL - VK SDK will handle it
-        mimeType = 'video/youtube';
-    }
+    console.log('[VK SDK Player] Loading:', url, 'Type:', type);
 
-    console.log('[VK SDK Player] Loading:', url, 'Type:', type, 'MIME:', mimeType);
-
-    // Try VK SDK Video API first (preferred method)
-    if (window.VK && window.VK.Video && typeof window.VK.Video.createPlayer === 'function') {
-        try {
-            console.log('[VK SDK Player] Using VK.Video.createPlayer');
-            const videoElement = document.createElement('video');
-            videoElement.style.cssText = 'width: 100%; height: 100%; background: #000;';
-            vkRoot.appendChild(videoElement);
-
-            const player = window.VK.Video.createPlayer({
-                container: vkRoot,
-                videoElement: videoElement,
-                source: {
-                    url: url,
-                    type: mimeType
-                },
-                config: {
-                    autoplay: true,
-                    controls: true
-                }
-            });
-
-            player.init();
-            console.log('[VK SDK Player] Successfully initialized with VK.Video.createPlayer');
-            return;
-        } catch (error) {
-            console.error('[VK SDK Player] VK.Video.createPlayer error:', error);
-        }
-    }
-
-    // Call the initPlayer function from original-player.html as fallback
+    // Use the initPlayer function from original-player.html
+    // The original-player.html contains the full VK SDK player implementation
     if (window.initPlayer && typeof window.initPlayer === 'function') {
         try {
             console.log('[VK SDK Player] Using initPlayer from original-player.html');
-            window.initPlayer(url, mimeType);
+            window.initPlayer(url, type);
             console.log('[VK SDK Player] Successfully initialized with initPlayer');
             return;
         } catch (error) {
@@ -302,8 +263,97 @@ function loadVKSDKPlayer(url, type = 'mp4') {
         }
     }
 
+    // Fallback: Try to use JP class directly if available
+    if (window.JP && window.uT && typeof window.JP === 'function') {
+        try {
+            console.log('[VK SDK Player] Using JP class directly');
+            const config = {
+                configName: ['default']
+            };
+            const player = new window.JP(config, window.uT.createRootTracer());
+            
+            // Prepare video data based on type
+            let videoData;
+            if (type === 'hls' || url.includes('.m3u8')) {
+                videoData = {
+                    container: vkRoot,
+                    sources: {
+                        HLS: {
+                            type: 'url',
+                            url: url
+                        }
+                    },
+                    title: 'Video',
+                    failoverHosts: []
+                };
+            } else if (type === 'youtube') {
+                // For YouTube, create a special source structure
+                videoData = {
+                    container: vkRoot,
+                    sources: {
+                        YouTube: {
+                            type: 'url',
+                            url: url
+                        }
+                    },
+                    title: 'Video',
+                    failoverHosts: []
+                };
+            } else if (type === 'ok') {
+                // For OK.ru
+                videoData = {
+                    container: vkRoot,
+                    sources: {
+                        OK: {
+                            type: 'url',
+                            url: url
+                        }
+                    },
+                    title: 'Video',
+                    failoverHosts: []
+                };
+            } else if (type === 'rutube') {
+                // For RuTube
+                videoData = {
+                    container: vkRoot,
+                    sources: {
+                        RuTube: {
+                            type: 'url',
+                            url: url
+                        }
+                    },
+                    title: 'Video',
+                    failoverHosts: []
+                };
+            } else {
+                // Default MP4/DASH
+                videoData = {
+                    container: vkRoot,
+                    sources: {
+                        MPEG: {
+                            'Invariant quality': url
+                        }
+                    },
+                    title: 'Video',
+                    failoverHosts: []
+                };
+            }
+            
+            player.initVideo(videoData);
+            console.log('[VK SDK Player] Successfully initialized with JP class');
+            return;
+        } catch (error) {
+            console.error('[VK SDK Player] JP class error:', error);
+        }
+    }
+
     // Fallback: create a simple video element if no SDK is available
     console.warn('[VK SDK Player] No SDK found, using fallback HTML5 video');
+    
+    let mimeType = 'video/mp4';
+    if (type === 'hls' || url.includes('.m3u8')) {
+        mimeType = 'application/x-mpegURL';
+    }
     
     const videoElement = document.createElement('video');
     videoElement.controls = true;
