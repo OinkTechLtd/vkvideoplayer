@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - VideoHub Player</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .docs-content {
+            max-width: 900px;
+            margin: 100px auto 50px;
+            padding: 40px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .docs-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        .faq-item {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .faq-answer {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← На главную</a>
+        
+        <div class="docs-content">
+            <h1>Часто задаваемые вопросы (FAQ)</h1>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Какие форматы видео поддерживает плеер?</div>
+                <div class="faq-answer">
+                    <p>Наш плеер поддерживает три основных типа видео:</p>
+                    <ul>
+                        <li><strong>VK Видео</strong> - видео из социальной сети ВКонтакте</li>
+                        <li><strong>YouTube</strong> - видео с платформы YouTube (включая Shorts)</li>
+                        <li><strong>MP4</strong> - прямые ссылки на видео файлы в формате MP4</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Как поделиться видео с друзьями?</div>
+                <div class="faq-answer">
+                    <p>Есть несколько способов:</p>
+                    <ol>
+                        <li>Нажмите кнопку "Копировать ссылку" и отправьте её друзьям</li>
+                        <li>Используйте кнопки быстрого шаринга: VK, Telegram, WhatsApp</li>
+                        <li>Скопируйте URL из адресной строки браузера (он содержит хэш с ID видео)</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Что такое ссылка с хэшем?</div>
+                <div class="faq-answer">
+                    <p>Ссылка с хэшем имеет вид <code>#video-youtube-dQw4w9WgXcQ</code>. Когда кто-то переходит по такой ссылке, плеер автоматически загружает указанное видео. Это удобно для отправки конкретных видео!</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Видео VK не загружается, что делать?</div>
+                <div class="faq-answer">
+                    <p>Возможные причины и решения:</p>
+                    <ul>
+                        <li><strong>Приватность:</strong> Убедитесь, что видео доступно всем пользователям</li>
+                        <li><strong>Неправильная ссылка:</strong> Проверьте, что ссылка содержит owner_id и video_id (например, vk.com/video-123456_789012)</li>
+                        <li><strong>Видео удалено:</strong> Возможно, видео было удалено автором или заблокировано</li>
+                        <li><strong>Ограничения региона:</strong> Некоторые видео могут быть недоступны в вашем регионе</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Можно ли скачать видео через плеер?</div>
+                <div class="faq-answer">
+                    <p>Нет, наш плеер предназначен только для просмотра видео. Скачивание видео может нарушать авторские права и условия использования платформ.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Работает ли плеер на мобильных устройствах?</div>
+                <div class="faq-answer">
+                    <p>Да! Плеер полностью адаптивен и работает на всех современных устройствах: ПК, планшетах и смартфонах (iOS и Android).</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Нужно ли регистрироваться?</div>
+                <div class="faq-answer">
+                    <p>Нет, регистрация не требуется. Плеер полностью бесплатен и доступен без создания аккаунта.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Почему YouTube видео не воспроизводится?</div>
+                <div class="faq-answer">
+                    <p>Возможные причины:</p>
+                    <ul>
+                        <li>Видео заблокировано в вашем регионе</li>
+                        <li>Видео удалено или стало приватным</li>
+                        <li>Проблемы с интернет-соединением</li>
+                        <li>Браузер блокирует iframe (проверьте настройки безопасности)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Какие браузеры поддерживаются?</div>
+                <div class="faq-answer">
+                    <p>Плеер работает во всех современных браузерах:</p>
+                    <ul>
+                        <li>Google Chrome (последние версии)</li>
+                        <li>Mozilla Firefox (последние версии)</li>
+                        <li>Safari (последние версии)</li>
+                        <li>Microsoft Edge (последние версии)</li>
+                        <li>Opera (последние версии)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Как сообщить об ошибке?</div>
+                <div class="faq-answer">
+                    <p>Вы можете сообщить об ошибке следующими способами:</p>
+                    <ul>
+                        <li>Создать Issue в репозитории GitHub</li>
+                        <li>Написать в поддержку (если доступна)</li>
+                        <li>Описать проблему в разделе комментариев (если есть)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">❓ Можно ли использовать плеер на своём сайте?</div>
+                <div class="faq-answer">
+                    <p>Да, вы можете использовать этот плеер на своём сайте. Проект распространяется под открытой лицензией. Подробнее см. в файле LICENSE.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
