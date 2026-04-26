@@ -182,88 +182,84 @@ function extractVideoId(url, type) {
     return null;
 }
 
-// Load the appropriate player
+// Load the appropriate player - ALL types use VK SDK Player
 function loadPlayer(type, id, url) {
     // Hide all players first
     hideAllPlayers();
 
-    switch(type) {
-        case 'vk':
-            loadVKPlayer(id, url);
-            break;
-        case 'youtube':
-            loadYouTubePlayer(id);
-            break;
-        case 'mp4':
-        case 'hls':
-        case 'dash':
-            loadMP4Player(url, type);
-            break;
-        default:
-            showError('Неподдерживаемый тип видео');
-    }
+    // All video types now use VK SDK Player from original-player.html
+    loadVKSDKPlayer(url, type);
 }
 
 // Hide all player containers
-function hideAllPlayers() {
-    document.getElementById('youtube-container')?.classList.add('hidden');
-    document.getElementById('mp4-container')?.classList.add('hidden');
     document.getElementById('errorMessage')?.classList.add('hidden');
     
-    // Hide original VK player root by clearing it when not needed
+    // Show original VK SDK player root - this is our main player now
     const vkRoot = document.getElementById('vk-player-root');
     if (vkRoot) {
-        vkRoot.style.display = 'none';
+        vkRoot.style.display = 'block';
+        vkRoot.classList.remove('hidden');
     }
 }
 
-// Load VK Video Player using iframe embed
-function loadVKPlayer(videoId, fullUrl) {
+// Load VK SDK Player - supports all video types (VK, YouTube, MP4, HLS, DASH)
+function loadVKSDKPlayer(url, type = 'mp4') {
     const vkRoot = document.getElementById('vk-player-root');
     
-    if (!vkRoot) return;
+    if (!vkRoot) {
+        showError('Плеер не найден. Убедитесь, что original-player.html подключен.');
+        return;
+    }
 
-    // Show the VK player root
+    // Show the VK SDK player root
     vkRoot.style.display = 'block';
     vkRoot.innerHTML = '';
     vkRoot.classList.remove('hidden');
 
-    // Parse owner and video id from the full URL or videoId
-    let ownerId = '', videoIdNum = '';
-    
-    // Try to extract from videoId format "ownerId_videoId"
-    if (videoId && videoId.includes('_')) {
-        [ownerId, videoIdNum] = videoId.split('_');
-    } else {
-        // Extract from full URL
-        const vkPattern = /vk\.com\/(?:video|clip)(-?\d+)_(\d+)/;
-        const match = fullUrl.match(vkPattern);
-        if (match) {
-            ownerId = match[1];
-            videoIdNum = match[2];
+    // Determine MIME type based on video type
+    let mimeType = 'video/mp4';
+    if (type === 'hls' || url.includes('.m3u8') || url.includes('hls')) {
+        mimeType = 'application/x-mpegURL';
+    } else if (type === 'dash' || url.includes('.mpd')) {
+        mimeType = 'application/dash+xml';
+    } else if (type === 'youtube') {
+        // For YouTube, we still use the direct URL - VK SDK will handle it
+        mimeType = 'video/youtube';
+    }
+
+    console.log('[VK SDK Player] Loading:', url, 'Type:', type, 'MIME:', mimeType);
+
+    // Call the initPlayer function from original-player.html
+    // This uses the VK Video SDK which supports external sources
+    if (window.initPlayer && typeof window.initPlayer === 'function') {
+        try {
+            window.initPlayer(url, mimeType);
+            console.log('[VK SDK Player] Successfully initialized with URL:', url);
+        } catch (error) {
+            console.error('[VK SDK Player] Error initializing:', error);
+            showError('Ошибка при инициализации плеера: ' + error.message);
         }
+    } else {
+        // Fallback: create a simple video element if initPlayer is not available
+        console.warn('[VK SDK Player] initPlayer not found, using fallback');
+        
+        const videoElement = document.createElement('video');
+        videoElement.controls = true;
+        videoElement.style.cssText = 'width: 100%; height: 100%; background: #000;';
+        
+        const source = document.createElement('source');
+        source.src = url;
+        source.type = mimeType;
+        
+        videoElement.appendChild(source);
+        videoElement.innerHTML += 'Ваш браузер не поддерживает это видео.';
+        
+        vkRoot.appendChild(videoElement);
     }
-
-    if (!ownerId || !videoIdNum) {
-        showError('Не удалось распознать ссылку VK Видео');
-        vkRoot.style.display = 'none';
-        return;
-    }
-
-    // Create VK Video iframe with the correct embed URL
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoIdNum}&hd=2&autoplay=0`;
-    iframe.width = '100%';
-    iframe.height = '100%';
-    iframe.frameBorder = '0';
-    iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture;';
-    iframe.sandbox = 'allow-scripts allow-same-origin allow-presentation allow-fullscreen';
-    iframe.style.cssText = 'width: 100%; height: 100%; border: none;';
-
-    vkRoot.appendChild(iframe);
-
-    console.log('VK Video loaded:', ownerId, videoIdNum);
 }
+
+// Expose loadVKSDKPlayer to window for use by original-player.html
+window.loadVKSDKPlayer = loadVKSDKPlayer;
 
 // Load YouTube Player
 function loadYouTubePlayer(videoId) {
