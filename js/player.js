@@ -17,6 +17,17 @@ const VIDEO_PATTERNS = {
         /\.mp4(\?.*)?$/i,
         /videodelivery\.net/,
         /cdn.*\.mp4/i
+    ],
+    hls: [
+        /\.m3u8(\?.*)?$/i,
+        /\/hls\//i,
+        /\/m3u8\//i,
+        /type=m3u8/i
+    ],
+    dash: [
+        /\.mpd(\?.*)?$/i,
+        /\/dash\//i,
+        /type=dash/i
     ]
 };
 
@@ -73,6 +84,9 @@ function initializePlayer() {
                     break;
                 case 'mp4':
                     example = 'https://example.com/video.mp4';
+                    break;
+                case 'hls':
+                    example = 'https://zabava-htlive.cdn.ngenix.net/hls/CH_STS_7/variant.m3u8';
                     break;
             }
             videoInput.value = example;
@@ -161,6 +175,8 @@ function extractVideoId(url, type) {
             }
             break;
         case 'mp4':
+        case 'hls':
+        case 'dash':
             return url;
     }
     return null;
@@ -179,7 +195,9 @@ function loadPlayer(type, id, url) {
             loadYouTubePlayer(id);
             break;
         case 'mp4':
-            loadMP4Player(url);
+        case 'hls':
+        case 'dash':
+            loadMP4Player(url, type);
             break;
         default:
             showError('Неподдерживаемый тип видео');
@@ -261,20 +279,53 @@ function loadYouTubePlayer(videoId) {
     console.log('YouTube video loaded:', videoId);
 }
 
-// Load MP4 Player
-function loadMP4Player(url) {
+// Load MP4/HLS/DASH Player using Video.js from original-player.html
+function loadMP4Player(url, type = 'mp4') {
     const container = document.getElementById('mp4-container');
     const video = document.getElementById('mp4-player');
     const source = container.querySelector('source');
 
-    if (!container || !video || !source) return;
+    if (!container || !video) {
+        // Fallback: try to use the original player via window.initPlayer
+        console.log('[VideoHub] MP4 container not found, trying original player...');
+        if (window.initPlayer && typeof window.initPlayer === 'function') {
+            let mimeType = 'video/mp4';
+            if (type === 'hls' || url.includes('.m3u8') || url.includes('hls')) {
+                mimeType = 'application/x-mpegURL';
+            } else if (type === 'dash' || url.includes('.mpd')) {
+                mimeType = 'application/dash+xml';
+            }
+            window.initPlayer(url, mimeType);
+            container?.classList.remove('hidden');
+            return;
+        }
+        showError('Плеер не найден. Убедитесь, что original-player.html подключен.');
+        return;
+    }
 
     container.classList.remove('hidden');
 
-    source.src = url;
-    video.load();
+    // Determine MIME type based on video type
+    let mimeType = 'video/mp4';
+    if (type === 'hls' || url.includes('.m3u8') || url.includes('hls')) {
+        mimeType = 'application/x-mpegURL';
+    } else if (type === 'dash' || url.includes('.mpd')) {
+        mimeType = 'application/dash+xml';
+    }
 
-    console.log('MP4 video loaded:', url);
+    source.src = url;
+    source.type = mimeType;
+    
+    // Reload video
+    video.load();
+    
+    // If using Video.js, reinitialize
+    if (video.player && typeof video.player.src === 'function') {
+        video.player.src({ type: mimeType, src: url });
+        video.player.play().catch(e => console.log('Autoplay prevented:', e));
+    }
+
+    console.log(`${type.toUpperCase()} video loaded:`, url, 'MIME:', mimeType);
 }
 
 // Show/hide loading spinner
@@ -370,12 +421,29 @@ function checkUrlForVideo() {
 
             // Reconstruct full ID for VK (owner_id_video_id)
             let fullId = id;
+            let url = '';
 
-            currentVideo = { type, id: fullId, url: '', title: '' };
+            // For HLS/DASH/MP4, the ID is the encoded URL
+            if (type === 'hls' || type === 'dash' || type === 'mp4') {
+                try {
+                    url = decodeURIComponent(id);
+                } catch (e) {
+                    url = id;
+                }
+                fullId = url;
+            }
+
+            currentVideo = { type, id: fullId, url, title: '' };
+
+            // Set input value for display
+            const videoInput = document.getElementById('videoUrl');
+            if (videoInput && url) {
+                videoInput.value = url;
+            }
 
             // Auto-load the video
             setTimeout(() => {
-                loadPlayer(type, fullId, '');
+                loadPlayer(type, fullId, url);
                 updateShareUrl();
                 showShareSection();
             }, 500);
