@@ -1,0 +1,316 @@
+/* Player Page Styles */
+
+.player-header {
+    background: var(--bg-card);
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.player-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--primary-color);
+}
+
+.player-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.player-main {
+    padding: 40px 0;
+    min-height: calc(100vh - 200px);
+}
+
+.page-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.input-section {
+    max-width: 800px;
+    margin: 0 auto 40px;
+}
+
+.input-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.video-input {
+    flex: 1;
+    padding: 15px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.video-input:focus {
+    border-color: var(--primary-color);
+}
+
+.input-hints {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.hint-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.hint-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Player Container */
+.player-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    background: #000;
+}
+
+.video-wrapper iframe,
+.video-wrapper video,
+.video-wrapper > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#youtube-player,
+#mp4-player {
+    width: 100%;
+    height: 100%;
+}
+
+/* Hidden State */
+.hidden {
+    display: none !important;
+}
+
+/* Error Message */
+.error-message {
+    padding: 40px;
+    text-align: center;
+    color: var(--danger-color);
+    font-size: 1.1rem;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    color: var(--text-secondary);
+}
+
+/* Share Section */
+.share-section {
+    max-width: 800px;
+    margin: 40px auto 0;
+    padding: 30px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.share-section h3 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.share-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.share-input {
+    flex: 1;
+    padding: 12px 15px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.share-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.share-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.share-btn.vk {
+    background: #0077FF;
+}
+
+.share-btn.telegram {
+    background: #0088cc;
+}
+
+.share-btn.whatsapp {
+    background: #25D366;
+}
+
+/* Video Info */
+.video-info {
+    max-width: 1000px;
+    margin: 30px auto 0;
+    padding: 25px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.video-info h3 {
+    margin-bottom: 15px;
+}
+
+.video-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* Player Footer */
+.player-footer {
+    background: var(--bg-card);
+    padding: 30px 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 60px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+}
+
+.player-footer p {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .share-input-group {
+        flex-direction: column;
+    }
+    
+    .footer-links {
+        gap: 15px;
+    }
+    
+    .player-header .container {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .share-buttons {
+        flex-direction: column;
+    }
+    
+    .share-btn {
+        width: 100%;
+    }
+}

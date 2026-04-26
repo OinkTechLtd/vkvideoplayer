@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Использование - VideoHub Player</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .docs-content {
+            max-width: 900px;
+            margin: 100px auto 50px;
+            padding: 40px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .docs-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        .docs-content h2 {
+            font-size: 1.8rem;
+            margin: 40px 0 20px;
+            color: var(--text-primary);
+        }
+        .docs-content p {
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        .docs-content ul, .docs-content ol {
+            margin: 20px 0;
+            padding-left: 30px;
+            color: var(--text-secondary);
+        }
+        .docs-content li {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        .code-block {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .code-block code {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+        .note {
+            background: rgba(74, 158, 255, 0.1);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← На главную</a>
+        
+        <div class="docs-content">
+            <h1>Руководство по использованию</h1>
+            
+            <h2>🎯 Что такое VideoHub Player?</h2>
+            <p>VideoHub Player — это универсальный видеоплеер, который позволяет воспроизводить видео из различных источников: VK Видео, YouTube, и прямые ссылки на MP4 файлы.</p>
+            
+            <h2>📋 Поддерживаемые форматы</h2>
+            <ul>
+                <li><strong>VK Видео</strong> - видео из ВКонтакте (vk.com/video)</li>
+                <li><strong>YouTube</strong> - видео с YouTube (youtube.com, youtu.be)</li>
+                <li><strong>MP4</strong> - прямые ссылки на видео файлы (.mp4)</li>
+            </ul>
+            
+            <h2>🚀 Как использовать плеер</h2>
+            <ol>
+                <li><strong>Откройте плеер</strong> - перейдите на страницу <a href="../player.html">player.html</a></li>
+                <li><strong>Вставьте ссылку</strong> - скопируйте ссылку на видео и вставьте в поле ввода</li>
+                <li><strong>Нажмите "Загрузить"</strong> - плеер автоматически определит тип видео</li>
+                <li><strong>Смотрите</strong> - наслаждайтесь просмотром!</li>
+            </ol>
+            
+            <h2>🔗 Форматы ссылок</h2>
+            
+            <h3>VK Видео</h3>
+            <div class="code-block">
+                <code>https://vk.com/video-223245678_456239329<br>
+https://vk.com/clip-123456_789012<br>
+https://m.vk.com/video-111111_222222</code>
+            </div>
+            
+            <h3>YouTube</h3>
+            <div class="code-block">
+                <code>https://www.youtube.com/watch?v=dQw4w9WgXcQ<br>
+https://youtu.be/dQw4w9WgXcQ<br>
+https://youtube.com/embed/dQw4w9WgXcQ<br>
+https://youtube.com/shorts/dQw4w9WgXcQ</code>
+            </div>
+            
+            <h3>MP4</h3>
+            <div class="code-block">
+                <code>https://example.com/video.mp4<br>
+https://cdn.example.com/files/movie.mp4</code>
+            </div>
+            
+            <h2>📤 Как поделиться видео</h2>
+            <p>После загрузки видео вы можете:</p>
+            <ul>
+                <li><strong>Скопировать ссылку</strong> - нажмите кнопку "Копировать ссылку"</li>
+                <li><strong>Поделиться в соцсетях</strong> - используйте кнопки VK, Telegram, WhatsApp</li>
+                <li><strong>Отправить ссылку с хэшем</strong> - ссылка будет иметь формат:<br>
+                <code>https://yoursite.com/player.html#video-youtube-dQw4w9WgXcQ</code></li>
+            </ul>
+            
+            <div class="note">
+                <strong>💡 Совет:</strong> Ссылки с хэшем позволяют открывать видео напрямую. Когда кто-то перейдет по такой ссылке, видео загрузится автоматически!
+            </div>
+            
+            <h2>⚙️ Особенности работы</h2>
+            <ul>
+                <li><strong>Автоматическое определение</strong> - плеер сам распознает тип видео по ссылке</li>
+                <li><strong>Адаптивный дизайн</strong> - работает на ПК, планшетах и смартфонах</li>
+                <li><strong>Без регистрации</strong> - не требуется создавать аккаунт</li>
+                <li><strong>Бесплатно</strong> - полностью бесплатный сервис</li>
+            </ul>
+            
+            <h2>❓ Проблемы и решения</h2>
+            
+            <h3>Видео не загружается</h3>
+            <ul>
+                <li>Проверьте правильность ссылки</li>
+                <li>Убедитесь, что видео доступно публично</li>
+                <li>Для VK: видео должно быть с настройками приватности "Все могут смотреть"</li>
+            </ul>
+            
+            <h3>Ошибка "Файл не найден"</h3>
+            <ul>
+                <li>Для VK видео убедитесь, что ссылка содержит owner_id и video_id</li>
+                <li>Проверьте, не удалено ли видео</li>
+                <li>Попробуйте обновить страницу</li>
+            </ul>
+            
+            <h2>📞 Поддержка</h2>
+            <p>Если у вас возникли вопросы или проблемы, обратитесь к разделу <a href="faq.html">FAQ</a> или создайте issue в репозитории GitHub.</p>
+        </div>
+    </div>
+</body>
+</html>

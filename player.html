@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub Player - Плеер</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/player.css">
+    <!-- VK SDK -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge@latest/dist/browser.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="player-header">
+        <div class="container">
+            <a href="index.html" class="back-link">← На главную</a>
+            <div class="player-logo">
+                <span class="logo-icon">🎬</span>
+                <span class="logo-text">VideoHub Player</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Player Section -->
+    <main class="player-main">
+        <div class="container">
+            <!-- Video Input Section -->
+            <div class="input-section">
+                <h1 class="page-title">Видеоплеер</h1>
+                <div class="input-group">
+                    <input type="text" id="videoUrl" class="video-input" placeholder="Вставьте ссылку на видео (VK, YouTube, MP4)...">
+                    <button id="loadBtn" class="btn btn-primary">Загрузить</button>
+                </div>
+                <div class="input-hints">
+                    <span>Примеры:</span>
+                    <button class="hint-btn" data-type="vk">VK Видео</button>
+                    <button class="hint-btn" data-type="youtube">YouTube</button>
+                    <button class="hint-btn" data-type="mp4">MP4</button>
+                </div>
+            </div>
+
+            <!-- Player Container -->
+            <div class="player-container" id="playerContainer">
+                <!-- Original Player from index.html - DO NOT MODIFY -->
+                <div id="vk-player-root"></div>
+                
+                <!-- VK Video Player Container -->
+                <div id="vk-video-container" class="video-wrapper hidden">
+                    <div id="vk-video-player"></div>
+                </div>
+                
+                <!-- YouTube Player Container -->
+                <div id="youtube-container" class="video-wrapper hidden">
+                    <iframe id="youtube-player" 
+                            src="" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>
+                
+                <!-- MP4 Player Container -->
+                <div id="mp4-container" class="video-wrapper hidden">
+                    <video id="mp4-player" controls preload="metadata">
+                        <source src="" type="video/mp4">
+                        Ваш браузер не поддерживает видео.
+                    </video>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="error-message hidden"></div>
+                
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="loading-spinner hidden">
+                    <div class="spinner"></div>
+                    <p>Загрузка видео...</p>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section hidden" id="shareSection">
+                <h3>Поделиться видео</h3>
+                <div class="share-input-group">
+                    <input type="text" id="shareUrl" class="share-input" readonly>
+                    <button id="copyLinkBtn" class="btn btn-secondary">Копировать ссылку</button>
+                </div>
+                <div class="share-buttons">
+                    <button class="share-btn vk" onclick="shareToVK()">VK</button>
+                    <button class="share-btn telegram" onclick="shareToTelegram()">Telegram</button>
+                    <button class="share-btn whatsapp" onclick="shareToWhatsApp()">WhatsApp</button>
+                </div>
+            </div>
+
+            <!-- Video Info -->
+            <div class="video-info hidden" id="videoInfo">
+                <h3 id="videoTitle">Название видео</h3>
+                <p id="videoDescription" class="video-description"></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="player-footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="docs/usage.html">Использование</a>
+                <a href="docs/faq.html">FAQ</a>
+                <a href="docs/terms.html">Условия</a>
+                <a href="docs/privacy.html">Конфиденциальность</a>
+            </div>
+            <p>&copy; 2024 VideoHub Player</p>
+        </div>
+    </footer>
+
+    <script src="js/player.js"></script>
+</body>
+</html>
