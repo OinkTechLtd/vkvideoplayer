@@ -39,12 +39,12 @@ function initializePlayer() {
     const loadBtn = document.getElementById('loadBtn');
     const videoInput = document.getElementById('videoUrl');
     const copyLinkBtn = document.getElementById('copyLinkBtn');
-    
+
     // Load button click
     if (loadBtn) {
         loadBtn.addEventListener('click', handleLoadVideo);
     }
-    
+
     // Enter key in input
     if (videoInput) {
         videoInput.addEventListener('keypress', (e) => {
@@ -53,12 +53,12 @@ function initializePlayer() {
             }
         });
     }
-    
+
     // Copy link button
     if (copyLinkBtn) {
         copyLinkBtn.addEventListener('click', copyShareLink);
     }
-    
+
     // Hint buttons
     document.querySelectorAll('.hint-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -85,33 +85,33 @@ function initializePlayer() {
 function handleLoadVideo() {
     const videoInput = document.getElementById('videoUrl');
     const url = videoInput.value.trim();
-    
+
     if (!url) {
         showError('Пожалуйста, введите ссылку на видео');
         return;
     }
-    
+
     showLoading(true);
     hideError();
-    
+
     // Detect video type
     const videoType = detectVideoType(url);
-    
+
     if (!videoType) {
         showLoading(false);
         showError('Не удалось определить тип видео. Пожалуйста, проверьте ссылку.');
         return;
     }
-    
+
     // Extract video ID
     const videoId = extractVideoId(url, videoType);
-    
+
     if (!videoId) {
         showLoading(false);
         showError('Не удалось извлечь ID видео из ссылки');
         return;
     }
-    
+
     // Store current video info
     currentVideo = {
         type: videoType,
@@ -119,7 +119,7 @@ function handleLoadVideo() {
         url: url,
         title: `Видео ${videoType.toUpperCase()}`
     };
-    
+
     // Load the appropriate player
     setTimeout(() => {
         loadPlayer(videoType, videoId, url);
@@ -170,10 +170,10 @@ function extractVideoId(url, type) {
 function loadPlayer(type, id, url) {
     // Hide all players first
     hideAllPlayers();
-    
+
     switch(type) {
         case 'vk':
-            loadVKPlayer(id);
+            loadVKPlayer(id, url);
             break;
         case 'youtube':
             loadYouTubePlayer(id);
@@ -188,52 +188,76 @@ function loadPlayer(type, id, url) {
 
 // Hide all player containers
 function hideAllPlayers() {
-    document.getElementById('vk-video-container')?.classList.add('hidden');
     document.getElementById('youtube-container')?.classList.add('hidden');
     document.getElementById('mp4-container')?.classList.add('hidden');
     document.getElementById('errorMessage')?.classList.add('hidden');
+    
+    // Hide original VK player root by clearing it when not needed
+    const vkRoot = document.getElementById('vk-player-root');
+    if (vkRoot) {
+        vkRoot.style.display = 'none';
+    }
 }
 
-// Load VK Video Player using SDK
-function loadVKPlayer(videoId) {
-    const container = document.getElementById('vk-video-container');
-    const playerDiv = document.getElementById('vk-video-player');
+// Load VK Video Player using iframe embed
+function loadVKPlayer(videoId, fullUrl) {
+    const vkRoot = document.getElementById('vk-player-root');
     
-    if (!container || !playerDiv) return;
+    if (!vkRoot) return;
+
+    // Show the VK player root
+    vkRoot.style.display = 'block';
+    vkRoot.innerHTML = '';
+    vkRoot.classList.remove('hidden');
+
+    // Parse owner and video id from the full URL or videoId
+    let ownerId = '', videoIdNum = '';
     
-    container.classList.remove('hidden');
-    
-    // Parse owner and video id
-    const [ownerId, videoIdNum] = videoId.split('_');
-    
-    // Clear previous content
-    playerDiv.innerHTML = '';
-    
-    // Create VK Video iframe
+    // Try to extract from videoId format "ownerId_videoId"
+    if (videoId && videoId.includes('_')) {
+        [ownerId, videoIdNum] = videoId.split('_');
+    } else {
+        // Extract from full URL
+        const vkPattern = /vk\.com\/(?:video|clip)(-?\d+)_(\d+)/;
+        const match = fullUrl.match(vkPattern);
+        if (match) {
+            ownerId = match[1];
+            videoIdNum = match[2];
+        }
+    }
+
+    if (!ownerId || !videoIdNum) {
+        showError('Не удалось распознать ссылку VK Видео');
+        vkRoot.style.display = 'none';
+        return;
+    }
+
+    // Create VK Video iframe with the correct embed URL
     const iframe = document.createElement('iframe');
-    iframe.src = `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoIdNum}&hd=2`;
+    iframe.src = `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoIdNum}&hd=2&autoplay=0`;
     iframe.width = '100%';
     iframe.height = '100%';
     iframe.frameBorder = '0';
     iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture;';
     iframe.sandbox = 'allow-scripts allow-same-origin allow-presentation allow-fullscreen';
-    
-    playerDiv.appendChild(iframe);
-    
-    console.log('VK Video loaded:', videoId);
+    iframe.style.cssText = 'width: 100%; height: 100%; border: none;';
+
+    vkRoot.appendChild(iframe);
+
+    console.log('VK Video loaded:', ownerId, videoIdNum);
 }
 
 // Load YouTube Player
 function loadYouTubePlayer(videoId) {
     const container = document.getElementById('youtube-container');
     const iframe = document.getElementById('youtube-player');
-    
+
     if (!container || !iframe) return;
-    
+
     container.classList.remove('hidden');
-    
+
     iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`;
-    
+
     console.log('YouTube video loaded:', videoId);
 }
 
@@ -242,14 +266,14 @@ function loadMP4Player(url) {
     const container = document.getElementById('mp4-container');
     const video = document.getElementById('mp4-player');
     const source = container.querySelector('source');
-    
+
     if (!container || !video || !source) return;
-    
+
     container.classList.remove('hidden');
-    
+
     source.src = url;
     video.load();
-    
+
     console.log('MP4 video loaded:', url);
 }
 
@@ -302,13 +326,13 @@ function copyShareLink() {
     if (shareInput) {
         shareInput.select();
         shareInput.setSelectionRange(0, 99999);
-        
+
         navigator.clipboard.writeText(shareInput.value).then(() => {
             const copyBtn = document.getElementById('copyLinkBtn');
             const originalText = copyBtn.textContent;
             copyBtn.textContent = 'Скопировано!';
             copyBtn.style.background = 'var(--success-color)';
-            
+
             setTimeout(() => {
                 copyBtn.textContent = originalText;
                 copyBtn.style.background = '';
@@ -343,16 +367,12 @@ function checkUrlForVideo() {
         if (parts.length >= 2) {
             const type = parts[0];
             const id = parts.slice(1).join('-');
-            
+
             // Reconstruct full ID for VK (owner_id_video_id)
             let fullId = id;
-            if (type === 'vk' && !id.includes('_')) {
-                // If it's a simple ID, we need to handle it differently
-                console.log('VK video ID format may need adjustment');
-            }
-            
+
             currentVideo = { type, id: fullId, url: '', title: '' };
-            
+
             // Auto-load the video
             setTimeout(() => {
                 loadPlayer(type, fullId, '');

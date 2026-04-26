@@ -6,8 +6,6 @@
     <title>VideoHub Player - Плеер</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/player.css">
-    <!-- VK SDK -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge@latest/dist/browser.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -41,24 +39,19 @@
 
             <!-- Player Container -->
             <div class="player-container" id="playerContainer">
-                <!-- Original Player from index.html - DO NOT MODIFY -->
+                <!-- Original VK Player from cdnvideohub.com - DO NOT MODIFY -->
                 <div id="vk-player-root"></div>
-                
-                <!-- VK Video Player Container -->
-                <div id="vk-video-container" class="video-wrapper hidden">
-                    <div id="vk-video-player"></div>
-                </div>
-                
+
                 <!-- YouTube Player Container -->
                 <div id="youtube-container" class="video-wrapper hidden">
-                    <iframe id="youtube-player" 
-                            src="" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    <iframe id="youtube-player"
+                            src=""
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen>
                     </iframe>
                 </div>
-                
+
                 <!-- MP4 Player Container -->
                 <div id="mp4-container" class="video-wrapper hidden">
                     <video id="mp4-player" controls preload="metadata">
@@ -69,7 +62,7 @@
 
                 <!-- Error Message -->
                 <div id="errorMessage" class="error-message hidden"></div>
-                
+
                 <!-- Loading Spinner -->
                 <div id="loadingSpinner" class="loading-spinner hidden">
                     <div class="spinner"></div>
