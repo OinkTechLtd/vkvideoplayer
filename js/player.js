@@ -229,33 +229,62 @@ function loadVKSDKPlayer(url, type = 'mp4') {
 
     console.log('[VK SDK Player] Loading:', url, 'Type:', type, 'MIME:', mimeType);
 
-    // Call the initPlayer function from original-player.html
-    // This uses the VK Video SDK which supports external sources
+    // Try VK SDK Video API first (preferred method)
+    if (window.VK && window.VK.Video && typeof window.VK.Video.createPlayer === 'function') {
+        try {
+            console.log('[VK SDK Player] Using VK.Video.createPlayer');
+            const videoElement = document.createElement('video');
+            videoElement.style.cssText = 'width: 100%; height: 100%; background: #000;';
+            vkRoot.appendChild(videoElement);
+
+            const player = window.VK.Video.createPlayer({
+                container: vkRoot,
+                videoElement: videoElement,
+                source: {
+                    url: url,
+                    type: mimeType
+                },
+                config: {
+                    autoplay: true,
+                    controls: true
+                }
+            });
+
+            player.init();
+            console.log('[VK SDK Player] Successfully initialized with VK.Video.createPlayer');
+            return;
+        } catch (error) {
+            console.error('[VK SDK Player] VK.Video.createPlayer error:', error);
+        }
+    }
+
+    // Call the initPlayer function from original-player.html as fallback
     if (window.initPlayer && typeof window.initPlayer === 'function') {
         try {
+            console.log('[VK SDK Player] Using initPlayer from original-player.html');
             window.initPlayer(url, mimeType);
-            console.log('[VK SDK Player] Successfully initialized with URL:', url);
+            console.log('[VK SDK Player] Successfully initialized with initPlayer');
+            return;
         } catch (error) {
-            console.error('[VK SDK Player] Error initializing:', error);
-            showError('Ошибка при инициализации плеера: ' + error.message);
+            console.error('[VK SDK Player] initPlayer error:', error);
         }
-    } else {
-        // Fallback: create a simple video element if initPlayer is not available
-        console.warn('[VK SDK Player] initPlayer not found, using fallback');
-        
-        const videoElement = document.createElement('video');
-        videoElement.controls = true;
-        videoElement.style.cssText = 'width: 100%; height: 100%; background: #000;';
-        
-        const source = document.createElement('source');
-        source.src = url;
-        source.type = mimeType;
-        
-        videoElement.appendChild(source);
-        videoElement.innerHTML += 'Ваш браузер не поддерживает это видео.';
-        
-        vkRoot.appendChild(videoElement);
     }
+
+    // Fallback: create a simple video element if no SDK is available
+    console.warn('[VK SDK Player] No SDK found, using fallback HTML5 video');
+    
+    const videoElement = document.createElement('video');
+    videoElement.controls = true;
+    videoElement.style.cssText = 'width: 100%; height: 100%; background: #000;';
+    
+    const source = document.createElement('source');
+    source.src = url;
+    source.type = mimeType;
+    
+    videoElement.appendChild(source);
+    videoElement.innerHTML += 'Ваш браузер не поддерживает это видео.';
+    
+    vkRoot.appendChild(videoElement);
 }
 
 // Expose loadVKSDKPlayer to window for use by original-player.html
