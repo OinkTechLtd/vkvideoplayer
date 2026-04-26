@@ -13,6 +13,16 @@ const VIDEO_PATTERNS = {
         /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
         /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
     ],
+    ok: [
+        /ok\.ru\/video\/(\d+)/,
+        /ok\.ru\/webapi\/video\/embed\/(\d+)/,
+        /ok\.ru\/videoembed\/(\d+)/
+    ],
+    rutube: [
+        /rutube\.ru\/video\/([a-zA-Z0-9_-]+)/,
+        /rutube\.ru\/play\/embed\/([a-zA-Z0-9_-]+)/,
+        /rutube\.ru\/player\/\?v=([a-zA-Z0-9_-]+)/
+    ],
     mp4: [
         /\.mp4(\?.*)?$/i,
         /videodelivery\.net/,
@@ -81,6 +91,12 @@ function initializePlayer() {
                     break;
                 case 'youtube':
                     example = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+                    break;
+                case 'ok':
+                    example = 'https://ok.ru/video/1234567890';
+                    break;
+                case 'rutube':
+                    example = 'https://rutube.ru/video/1234567890abcdef/';
                     break;
                 case 'mp4':
                     example = 'https://example.com/video.mp4';
@@ -170,6 +186,22 @@ function extractVideoId(url, type) {
             for (const pattern of VIDEO_PATTERNS.youtube) {
                 const match = url.match(pattern);
                 if (match) {
+                    return match[1];
+                }
+            }
+            break;
+        case 'ok':
+            for (const pattern of VIDEO_PATTERNS.ok) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            break;
+        case 'rutube':
+            for (const pattern of VIDEO_PATTERNS.rutube) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
                     return match[1];
                 }
             }
