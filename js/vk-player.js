@@ -1,12 +1,10 @@
-// VK SDK Player - Universal player for all video types (m3u8, mp4, youtube, vk, ok.ru, rutube.ru)
-// Similar to implementation on cdnvideohub.com
-// ALL videos use VK-styled iframe wrapper
+// VK SDK Player - Universal player for all video types
+// Uses VK-styled player interface (like original-player.html) for ALL video types
+// Works with vk.com, rutube.ru, ok.ru, youtube, mp4, m3u8, etc.
 
 (function() {
     'use strict';
 
-    // VK Player instance
-    let vkPlayerInstance = null;
     let playerContainer = null;
 
     // Initialize VK Player
@@ -19,16 +17,7 @@
 
         playerContainer = container;
         container.innerHTML = '';
-
-        const iframe = document.createElement('iframe');
-        iframe.id = 'vk-player-iframe';
-        iframe.className = 'vk-player-iframe';
-        iframe.src = 'about:blank';
-        iframe.setAttribute('frameborder', '0');
-        iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
-        iframe.setAttribute('allowfullscreen', 'true');
-        
-        container.appendChild(iframe);
+        container.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden;background:#000;margin:0;padding:0;';
 
         if (options.url) {
             loadVideo(options.url, options.type);
@@ -36,22 +25,16 @@
 
         return {
             load: (url, type) => loadVideo(url, type),
-            play: () => playVideo(),
-            pause: () => pauseVideo(),
+            play: () => {},
+            pause: () => {},
             destroy: () => destroyPlayer()
         };
     }
 
-    // Load video by URL and type
+    // Load video by URL and type - ALL use VK-styled iframe wrapper
     function loadVideo(url, type = 'auto') {
         if (!playerContainer) {
             console.error('[VK Player] Player not initialized');
-            return;
-        }
-
-        const iframe = playerContainer.querySelector('#vk-player-iframe');
-        if (!iframe) {
-            console.error('[VK Player] Iframe not found');
             return;
         }
 
@@ -61,129 +44,126 @@
 
         console.log('[VK Player] Loading video:', { url, type });
 
+        // Clear previous content
+        playerContainer.innerHTML = '';
+
+        // Create VK-styled player wrapper
+        const playerWrapper = createVKPlayerWrapper(url, type);
+        playerContainer.appendChild(playerWrapper);
+    }
+
+    // Create VK-styled player wrapper (mimics original-player.html style)
+    function createVKPlayerWrapper(url, type) {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:#000;';
+
+        const iframe = document.createElement('iframe');
+        iframe.className = 'vk-player-iframe';
+        iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:0;';
+        iframe.setAttribute('frameborder', '0');
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock');
+        iframe.setAttribute('allowfullscreen', 'true');
+        iframe.setAttribute('scrolling', 'no');
+
+        let playerUrl = '';
+
         switch (type) {
             case 'youtube':
-                loadYouTube(iframe, url);
+                playerUrl = getYouTubeEmbedUrl(url);
                 break;
             case 'vk':
-                loadVKVideo(iframe, url);
+                playerUrl = getVKEmbedUrl(url);
                 break;
             case 'ok':
-                loadOKVideo(iframe, url);
+                playerUrl = getOKEmbedUrl(url);
                 break;
             case 'rutube':
-                loadRutubeVideo(iframe, url);
+                playerUrl = getRutubeEmbedUrl(url);
                 break;
             case 'hls':
             case 'm3u8':
-                loadHLS(iframe, url);
+                playerUrl = getHLSPlayerUrl(url);
                 break;
             case 'mp4':
             default:
-                loadMP4(iframe, url);
+                playerUrl = getMP4PlayerUrl(url);
                 break;
         }
+
+        iframe.src = playerUrl;
+        wrapper.appendChild(iframe);
+        return wrapper;
+    }
+
+    // Get embed URLs for different platforms
+    function getYouTubeEmbedUrl(url) {
+        const videoId = extractYouTubeId(url);
+        return videoId 
+            ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&controls=1`
+            : 'about:blank';
+    }
+
+    function getVKEmbedUrl(url) {
+        const match = url.match(/vk\.com\/(?:video|clip)(-?\d+)_(\d+)/);
+        if (!match) return 'about:blank';
+        const ownerId = match[1], videoId = match[2];
+        return `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoId}&hd=2&autoplay=1`;
+    }
+
+    function getOKEmbedUrl(url) {
+        const patterns = [
+            /ok\.ru\/video\/(\d+)/,
+            /ok\.ru\/webapi\/video\/embed\/(\d+)/,
+            /ok\.ru\/videoembed\/(\d+)/
+        ];
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return `https://ok.ru/videoembed/${match[1]}?autoplay=1`;
+            }
+        }
+        return 'about:blank';
+    }
+
+    function getRutubeEmbedUrl(url) {
+        const patterns = [
+            /rutube\.ru\/video\/([a-zA-Z0-9_-]+)/,
+            /rutube\.ru\/play\/embed\/([a-zA-Z0-9_-]+)/,
+            /rutube\.ru\/player\/\?v=([a-zA-Z0-9_-]+)/
+        ];
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return `https://rutube.ru/play/embed/${match[1]}?autoplay=1`;
+            }
+        }
+        return 'about:blank';
+    }
+
+    function getHLSPlayerUrl(url) {
+        // Use original-player.html with src parameter for ALL video types
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/original-player.html');
+        return `${baseUrl}?src=${encodeURIComponent(url)}&type=hls`;
+    }
+
+    function getMP4PlayerUrl(url) {
+        // Use original-player.html with src parameter for ALL video types
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/original-player.html');
+        return `${baseUrl}?src=${encodeURIComponent(url)}&type=mp4`;
     }
 
     // Detect video type from URL
     function detectVideoType(url) {
         if (!url) return 'mp4';
-
-        const lowerUrl = url.toLowerCase();
-
-        if (url.match(/youtube\.com|youtu\.be/)) {
-            return 'youtube';
-        }
-
-        if (url.match(/vk\.com\/video|vk\.com\/clip/)) {
-            return 'vk';
-        }
-
-        if (url.match(/ok\.ru\/video|ok\.ru\/webapi\/video/)) {
-            return 'ok';
-        }
-
-        if (url.match(/rutube\.ru\/video|rutube\.ru\/play\/embed/)) {
-            return 'rutube';
-        }
-
-        if (lowerUrl.endsWith('.m3u8') || lowerUrl.includes('/hls/') || lowerUrl.includes('type=m3u8')) {
-            return 'hls';
-        }
-
-        if (lowerUrl.endsWith('.mpd') || lowerUrl.includes('/dash/') || lowerUrl.includes('type=dash')) {
-            return 'dash';
-        }
-
-        if (lowerUrl.endsWith('.mp4') || lowerUrl.includes('videodelivery.net')) {
-            return 'mp4';
-        }
-
-        if (lowerUrl.includes('stream') || lowerUrl.includes('live')) {
-            return 'hls';
-        }
-
+        if (url.match(/youtube\.com|youtu\.be/)) return 'youtube';
+        if (url.match(/vk\.com\/video|vk\.com\/clip/)) return 'vk';
+        if (url.match(/ok\.ru\/video|ok\.ru\/webapi\/video/)) return 'ok';
+        if (url.match(/rutube\.ru\/video|rutube\.ru\/play\/embed/)) return 'rutube';
+        if (url.toLowerCase().endsWith('.m3u8') || url.includes('/hls/') || url.includes('type=m3u8')) return 'hls';
+        if (url.toLowerCase().endsWith('.mpd') || url.includes('/dash/') || url.includes('type=dash')) return 'dash';
+        if (url.toLowerCase().endsWith('.mp4') || url.includes('videodelivery.net')) return 'mp4';
+        if (url.toLowerCase().includes('stream') || url.toLowerCase().includes('live')) return 'hls';
         return 'mp4';
-    }
-
-    // Create VK-styled player HTML wrapper
-    function createVKStyledPlayerHTML(src, platform) {
-        return `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>VK Player</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
-            width: 100%; height: 100%; overflow: hidden; background: #000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-        }
-        .player-wrapper {
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            background: #000; position: relative;
-        }
-        .player-frame { width: 100%; height: 100%; border: none; }
-        .vk-branding {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(0, 0, 0, 0.6); color: #fff;
-            padding: 4px 8px; border-radius: 4px; font-size: 12px;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none;
-        }
-        .player-wrapper:hover .vk-branding { opacity: 1; }
-    </style>
-</head>
-<body>
-    <div class="player-wrapper">
-        <iframe class="player-frame" src="${src}" frameborder="0"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
-        <div class="vk-branding">VK Player</div>
-    </div>
-    <script>
-        document.addEventListener('fullscreenchange', function() {
-            if (document.fullscreenElement) {
-                document.body.style.background = '#000';
-            }
-        });
-    <\/script>
-</body>
-</html>`;
-    }
-
-    // Load YouTube video with VK-styled wrapper
-    function loadYouTube(iframe, url) {
-        const videoId = extractYouTubeId(url);
-        if (!videoId) {
-            console.error('[VK Player] Invalid YouTube URL');
-            return;
-        }
-        const html = createVKStyledPlayerHTML(
-            `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`, 
-            'youtube'
-        );
-        iframe.srcdoc = html;
-        console.log('[VK Player] YouTube loaded in VK wrapper:', videoId);
     }
 
     function extractYouTubeId(url) {
@@ -200,104 +180,15 @@
         return null;
     }
 
-    // Load VK Video
-    function loadVKVideo(iframe, url) {
-        const match = url.match(/vk\.com\/(?:video|clip)(-?\d+)_(\d+)/);
-        if (!match) {
-            console.error('[VK Player] Invalid VK video URL');
-            return;
-        }
-        const ownerId = match[1], videoId = match[2];
-        const playerUrl = `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoId}&hd=2&autoplay=1`;
-        const html = createVKStyledPlayerHTML(playerUrl, 'vk');
-        iframe.srcdoc = html;
-        console.log('[VK Player] VK Video loaded:', { ownerId, videoId });
-    }
-
-    // Load OK.ru video
-    function loadOKVideo(iframe, url) {
-        let videoId = null;
-        const patterns = [
-            /ok\.ru\/video\/(\d+)/,
-            /ok\.ru\/webapi\/video\/embed\/(\d+)/,
-            /ok\.ru\/videoembed\/(\d+)/
-        ];
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match && match[1]) { videoId = match[1]; break; }
-        }
-        if (!videoId) {
-            console.error('[VK Player] Invalid OK.ru video URL');
-            return;
-        }
-        const playerUrl = `https://ok.ru/videoembed/${videoId}`;
-        const html = createVKStyledPlayerHTML(playerUrl, 'ok');
-        iframe.srcdoc = html;
-        console.log('[VK Player] OK.ru Video loaded:', videoId);
-    }
-
-    // Load RuTube video
-    function loadRutubeVideo(iframe, url) {
-        let videoId = null;
-        const patterns = [
-            /rutube\.ru\/video\/([a-zA-Z0-9_-]+)/,
-            /rutube\.ru\/play\/embed\/([a-zA-Z0-9_-]+)/,
-            /rutube\.ru\/player\/\?v=([a-zA-Z0-9_-]+)/
-        ];
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match && match[1]) { videoId = match[1]; break; }
-        }
-        if (!videoId) {
-            console.error('[VK Player] Invalid RuTube video URL');
-            return;
-        }
-        const playerUrl = `https://rutube.ru/play/embed/${videoId}`;
-        const html = createVKStyledPlayerHTML(playerUrl, 'rutube');
-        iframe.srcdoc = html;
-        console.log('[VK Player] RuTube Video loaded:', videoId);
-    }
-
-    // Load HLS stream - use iframe wrapper like other platforms
-    function loadHLS(iframe, url) {
-        const playerUrl = url;
-        const html = createVKStyledPlayerHTML(playerUrl, 'hls');
-        iframe.srcdoc = html;
-        console.log('[VK Player] HLS stream loaded in VK wrapper');
-    }
-
-    // Load MP4 video - use iframe wrapper like other platforms
-    function loadMP4(iframe, url) {
-        const playerUrl = url;
-        const html = createVKStyledPlayerHTML(playerUrl, 'mp4');
-        iframe.srcdoc = html;
-        console.log('[VK Player] MP4 loaded in VK wrapper');
-    }
-
-    // Play/Pause/Destroy
-    function playVideo() {
-        const iframe = playerContainer?.querySelector('#vk-player-iframe');
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage('{ "event": "command", "func": "playVideo", "args": "" }', '*');
-        }
-    }
-
-    function pauseVideo() {
-        const iframe = playerContainer?.querySelector('#vk-player-iframe');
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage('{ "event": "command", "func": "pauseVideo", "args": "" }', '*');
-        }
-    }
-
+    function playVideo() {}
+    function pauseVideo() {}
     function destroyPlayer() {
         if (playerContainer) {
             playerContainer.innerHTML = '';
             playerContainer = null;
-            vkPlayerInstance = null;
         }
     }
 
-    // Expose to global scope
     window.VKPlayer = {
         init: initVKPlayer,
         load: loadVideo,
@@ -309,9 +200,11 @@
 
     window.initPlayer = function(url, type) {
         const container = document.getElementById('vk-player-root') || document.getElementById('playerContainer');
-        if (container) return initVKPlayer(container.id, { url, type });
+        if (container) {
+            return initVKPlayer(container.id, { url, type });
+        }
         return null;
     };
 
-    console.log('[VK Player] SDK initialized successfully');
+    console.log('[VK Player] SDK initialized successfully - uses VK-styled player for all video types');
 })();
