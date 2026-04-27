@@ -76,6 +76,8 @@
                 break;
             case 'hls':
             case 'm3u8':
+            case 'dash':
+            case 'mpd':
                 loadHLS(iframe, url);
                 break;
             case 'mp4':
@@ -126,8 +128,151 @@
         return 'mp4';
     }
 
-    // Create VK-styled player HTML wrapper
-    function createVKStyledPlayerHTML(src, platform) {
+    // Create VK-styled player HTML wrapper - Universal player for ALL video types
+    function createVKStyledPlayerHTML(src, platform, isDirectStream = false) {
+        if (isDirectStream) {
+            // For direct streams (mp4, m3u8), use HLS.js or native video element with VK styling
+            const safeUrl = src.replace(/'/g, "\\'");
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>VK Player</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { 
+            width: 100%; height: 100%; overflow: hidden; background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+        }
+        .player-wrapper {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: #000; position: relative;
+        }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        .vk-controls {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 20px 15px 15px; display: flex; align-items: center; gap: 10px;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .player-wrapper:hover .vk-controls { opacity: 1; }
+        .vk-btn {
+            background: rgba(255,255,255,0.2); border: none; color: #fff;
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .vk-btn:hover { background: rgba(255,255,255,0.3); }
+        .vk-progress {
+            flex: 1; height: 4px; background: rgba(255,255,255,0.3);
+            border-radius: 2px; cursor: pointer; position: relative;
+        }
+        .vk-progress-bar {
+            height: 100%; background: #0077FF; border-radius: 2px; width: 0%;
+        }
+        .vk-time { color: #fff; font-size: 13px; min-width: 80px; text-align: center; }
+        .vk-branding {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0, 0, 0, 0.6); color: #fff;
+            padding: 4px 8px; border-radius: 4px; font-size: 12px;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .player-wrapper:hover .vk-branding { opacity: 1; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
+</head>
+<body>
+    <div class="player-wrapper">
+        <video id="video" autoplay playsinline></video>
+        <div class="vk-controls">
+            <button class="vk-btn" id="playBtn">▶</button>
+            <div class="vk-progress" id="progress">
+                <div class="vk-progress-bar" id="progressBar"></div>
+            </div>
+            <span class="vk-time" id="time">0:00 / 0:00</span>
+            <button class="vk-btn" id="volumeBtn">🔊</button>
+            <button class="vk-btn" id="fullscreenBtn">⛶</button>
+        </div>
+        <div class="vk-branding">VK Player</div>
+    </div>
+    <script>
+        (function() {
+            const video = document.getElementById('video');
+            const source = '${safeUrl}';
+            const playBtn = document.getElementById('playBtn');
+            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progressBar');
+            const timeDisplay = document.getElementById('time');
+            const volumeBtn = document.getElementById('volumeBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return mins + ':' + (secs < 10 ? '0' : '') + secs;
+            }
+            
+            function initPlayer() {
+                if (source.includes('.m3u8') || source.includes('hls')) {
+                    if (Hls.isSupported()) {
+                        const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+                        hls.loadSource(source);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                            video.play().catch(e=>{});
+                        });
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        video.src = source;
+                        video.addEventListener('loadedmetadata', () => video.play().catch(e=>{}));
+                    }
+                } else {
+                    video.src = source;
+                    video.play().catch(e=>{});
+                }
+            }
+            
+            playBtn.addEventListener('click', () => {
+                if (video.paused) video.play();
+                else video.pause();
+            });
+            
+            video.addEventListener('timeupdate', () => {
+                const percent = (video.currentTime / video.duration) * 100;
+                progressBar.style.width = percent + '%';
+                timeDisplay.textContent = formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+            });
+            
+            progress.addEventListener('click', (e) => {
+                const rect = progress.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                video.currentTime = pos * video.duration;
+            });
+            
+            volumeBtn.addEventListener('click', () => {
+                video.muted = !video.muted;
+                volumeBtn.textContent = video.muted ? '🔇' : '🔊';
+            });
+            
+            fullscreenBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(e=>{});
+                } else {
+                    document.exitFullscreen().catch(e=>{});
+                }
+            });
+            
+            video.addEventListener('play', () => playBtn.textContent = '⏸');
+            video.addEventListener('pause', () => playBtn.textContent = '▶');
+            
+            initPlayer();
+        })();
+    <\/script>
+</body>
+</html>`;
+        }
+        
+        // For embedded players (VK, OK, RuTube, YouTube)
         return `<!DOCTYPE html>
 <html>
 <head>
@@ -258,81 +403,18 @@
         console.log('[VK Player] RuTube Video loaded:', videoId);
     }
 
-    // Load HLS stream
+    // Load HLS stream - Use new VK-styled player with controls
     function loadHLS(iframe, url) {
-        const safeUrl = url.replace(/'/g, "\\'");
-        const html = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>VK Player HLS</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-        .vk-branding { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; opacity: 0; transition: opacity 0.3s; }
-        body:hover .vk-branding { opacity: 1; }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
-</head>
-<body style="position:relative">
-    <video id="video" autoplay playsinline></video>
-    <div class="vk-branding">VK Player</div>
-    <script>
-        (function() {
-            const video = document.getElementById('video');
-            const source = '${safeUrl}';
-            if (Hls.isSupported()) {
-                const hls = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 90 });
-                hls.loadSource(source); hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(e=>{}));
-                hls.on(Hls.Events.ERROR, (evt, data) => {
-                    if (data.fatal) {
-                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-                        else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-                        else hls.destroy();
-                    }
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = source;
-                video.addEventListener('loadedmetadata', () => video.play().catch(e=>{}));
-            }
-        })();
-    <\/script>
-</body>
-</html>`;
+        const html = createVKStyledPlayerHTML(url, 'hls', true);
         iframe.srcdoc = html;
-        console.log('[VK Player] HLS stream loaded');
+        console.log('[VK Player] HLS stream loaded with VK controls');
     }
 
-    // Load MP4 video
+    // Load MP4 video - Use new VK-styled player with controls
     function loadMP4(iframe, url) {
-        const safeUrl = url.replace(/"/g, '&quot;');
-        const html = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>VK Player MP4</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-        .vk-branding { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; opacity: 0; transition: opacity 0.3s; }
-        body:hover .vk-branding { opacity: 1; }
-    </style>
-</head>
-<body style="position:relative">
-    <video id="video" autoplay playsinline controls>
-        <source src="${safeUrl}" type="video/mp4">
-    </video>
-    <div class="vk-branding">VK Player</div>
-    <script>
-        (function() { const video = document.getElementById('video'); video.play().catch(e=>{}); })();
-    <\/script>
-</body>
-</html>`;
+        const html = createVKStyledPlayerHTML(url, 'mp4', true);
         iframe.srcdoc = html;
-        console.log('[VK Player] MP4 loaded');
+        console.log('[VK Player] MP4 loaded with VK controls');
     }
 
     // Play/Pause/Destroy
