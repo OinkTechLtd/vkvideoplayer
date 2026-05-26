@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VK Video Player (SDK + Native Player)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .player-container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Адаптивный контейнер для видео (Aspect Ratio 16:9) */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="player-container">
+    <h2>VK Video Player</h2>
+    
+    <!-- Контейнер плеера -->
+    <div class="video-wrapper">
+        <!-- 
+            ЗАМЕНИТЕ src НИЖЕ НА ВАШУ ССЫЛКУ 
+            Формат: https://vk.com/video_ext.php?oid=-XXX&id=XXX&hd=2
+            oid: ID владельца (если группа, то с минусом)
+            id: ID видео
+        -->
+        <iframe 
+            id="vk_video_frame"
+            src="" 
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture;" 
+            frameborder="0" 
+            allowfullscreen>
+        </iframe>
+    </div>
+
+    <div class="status" id="sdk-status">Инициализация SDK...</div>
+</div>
+
+<!-- Подключение официального SDK VK -->
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<!-- Или классический: <script src="https://vk.com/js/api/openapi.js?169"></script> -->
+
+<script>
+    // КОНФИГУРАЦИЯ
+    // Вставьте свои данные здесь
+    const API_ID = 0; // Ваш API ID приложения (получить на dev.vk.com)
+    
+    // Пример видео (замените на нужное)
+    // oid: -1 (видео от сообщества VK), id: 456239669
+    const videoOid = '-1'; 
+    const videoId = '456239669';
+    
+    // Формирование ссылки на плеер
+    // hd=2 включает HD качество если доступно
+    const videoUrl = `https://vk.com/video_ext.php?oid=${videoOid}&id=${videoId}&hd=2`;
+
+    // Установка ссылки в iframe
+    document.getElementById('vk_video_frame').src = videoUrl;
+
+    // Инициализация VK Bridge (SDK)
+    if (window.vkBridge) {
+        vkBridge.send('VKWebAppInit')
+            .then((data) => {
+                console.log('VK Bridge initialized successfully', data);
+                document.getElementById('sdk-status').textContent = 'VK SDK активен';
+                document.getElementById('sdk-status').style.color = 'green';
+            })
+            .catch((error) => {
+                console.error('VK Bridge init error:', error);
+                document.getElementById('sdk-status').textContent = 'SDK: Ошибка инициализации (возможно, не в приложении VK)';
+            });
+    } else {
+        document.getElementById('sdk-status').textContent = 'SDK не загружен';
+    }
+
+    // Обработка событий от плеера (опционально)
+    window.addEventListener('message', function(e) {
+        // Здесь можно обрабатывать события от плеера VK, если они передаются через postMessage
+        // Например: начало воспроизведения, пауза и т.д.
+        if (e.origin === 'https://vk.com' || e.origin === 'https://www.vk.com') {
+             console.log('Событие от VK Player:', e.data);
+        }
+    });
+</script>
+
+</body>
+</html>
